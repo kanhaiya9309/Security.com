@@ -4,7 +4,7 @@ const express =  require ('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
-
+const encryption = require("mongoose-encryption");
 
 
 mongoose.connect('mongodb://127.0.0.1/Security', {
@@ -16,6 +16,10 @@ const userPass = new mongoose.Schema( {
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 }) 
+
+const secret = "Thisisourlittlesecrets";
+userPass.plugin(encryption,{secret:secret,encryptedFields:['password']});
+
 
 
 const UserPass = new mongoose.model('UserPass',userPass);
