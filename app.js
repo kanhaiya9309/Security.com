@@ -4,7 +4,9 @@ const express =  require ('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
-const encryption = require("mongoose-encryption");
+//const encryption = require("mongoose-encryption");
+const hash = require('MD5');
+
 
 
 mongoose.connect('mongodb://127.0.0.1/Security', {
@@ -13,12 +15,13 @@ mongoose.connect('mongodb://127.0.0.1/Security', {
      )
 
 const userPass = new mongoose.Schema( {
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+    email:{ type: String, required: true } ,
+    password:{ type: String, required: true }
 }) 
-const secret = process.env.SECRET;
 
-userPass.plugin(encryption,{secret:secret,encryptedFields:['password']});
+// const secret = process.env.SECRET;
+
+// userPass.plugin(encryption,{secret:secret,encryptedFields:['password']});
 
 
 
@@ -58,7 +61,7 @@ app.get("/submit",function(req,res){
 
 app.post('/register',function(req,res){
     const userEmail = req.body.username;
-    const userPass = req.body.password ;
+    const userPass = hash(req.body.password);
 
     const userDetails =  new  UserPass({
     email : userEmail ,
@@ -72,13 +75,13 @@ app.post('/register',function(req,res){
 
 app.post('/login',function(req,res){
   const userName = req.body.username;
-  const password = req .body.password;
+  const password = hash(req .body.password);
 
   UserPass.findOne({email:userName})
   .then((foundUser)=>{
     if(foundUser.password === password){
         res.render("secrets");
-        console.log(foundUser.password);
+        // console.log(foundUser.password);
     }else{
       console.log("UserName and Pass is Wrong ")
     }
