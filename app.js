@@ -1,5 +1,5 @@
 //jshint esversion:6
-
+require('dotenv').config()
 const express =  require ('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
@@ -16,8 +16,8 @@ const userPass = new mongoose.Schema( {
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
 }) 
+const secret = process.env.SECRET;
 
-const secret = "Thisisourlittlesecrets";
 userPass.plugin(encryption,{secret:secret,encryptedFields:['password']});
 
 
@@ -88,7 +88,7 @@ app.post('/login',function(req,res){
   })
 })  
 
-
+// console.log(process.env) 
 app.listen(port ,()=>{
     console.log(`Server is started on port ${port} ` );
 })
