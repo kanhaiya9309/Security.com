@@ -1,11 +1,15 @@
 //jshint esversion:6
+
 require('dotenv').config()
 const express =  require ('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
 //const encryption = require("mongoose-encryption");
-const hash = require('MD5');
+// const hash = require('MD5');
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
+
 
 
 
@@ -60,31 +64,42 @@ app.get("/submit",function(req,res){
 
 
 app.post('/register',function(req,res){
-    const userEmail = req.body.username;
-    const userPass = hash(req.body.password);
+    // const userEmail = req.body.username;
+    // const userPass = req.body.password;
 
-    const userDetails =  new  UserPass({
-    email : userEmail ,
-    password : userPass
-  })
-    
-    userDetails.save()
-    res.redirect('/secrets')
-   
+   bcrypt.genSalt(saltRounds, function(err, salt) {
+      bcrypt.hash(req.body.password, salt, function(err, hash) {
+        const userDetails =  new  UserPass ({
+          email : req.body.username ,
+          password : hash
+        })
+          userDetails.save()
+          res.redirect('/secrets')
+      });
+  });
+
  })
 
 app.post('/login',function(req,res){
   const userName = req.body.username;
-  const password = hash(req .body.password);
-
+  const password = req .body.password;
+ 
+  
   UserPass.findOne({email:userName})
   .then((foundUser)=>{
-    if(foundUser.password === password){
+    bcrypt.compare(password, foundUser.password, function(err, result) {
+      if(result==true){
         res.render("secrets");
-        // console.log(foundUser.password);
-    }else{
-      console.log("UserName and Pass is Wrong ")
-    }
+      }else{
+        console.log("UserName and Pass is Wrong ")
+      }
+   });
+    // if(foundUser.password === password){
+    //     res.render("secrets");
+    //     // console.log(foundUser.password);
+    // }else{
+      
+    // }
   })
   .catch((err)=>{
     console.log(err)
