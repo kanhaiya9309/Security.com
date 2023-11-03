@@ -5,38 +5,63 @@ const express =  require ('express');
 const bodyParser = require('body-parser');
 const ejs = require('ejs');
 const mongoose = require('mongoose');
-//const encryption = require("mongoose-encryption");
-// const hash = require('MD5');
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
+const LocalStrategy = require('passport-local').Strategy;
+const session = require('express-session');
+const passport =require('passport');
+const passportLocalMongoose =require('passport-local-mongoose');
+const API = process.env.API ;
 
+// console.log(API);
 
-
-
-mongoose.connect('mongodb://127.0.0.1/Security', {
-     useUnifiedTopology: true, 
-     useNewUrlParser: true,  }
-     )
-
-const userPass = new mongoose.Schema( {
-    email:{ type: String, required: true } ,
-    password:{ type: String, required: true }
-}) 
-
-// const secret = process.env.SECRET;
-
-// userPass.plugin(encryption,{secret:secret,encryptedFields:['password']});
-
-
-
-const UserPass = new mongoose.model('UserPass',userPass);
 
 
 const app = express();
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended:true})) ;
 app.set('view engine','ejs') ;
-const port = 3000 ;
+const port = 5500 ;
+
+app.use(session({
+  secret:"our little secret",
+  resave:false,
+  saveUninitialized:false,
+}))
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+mongoose.connect('mongodb://127.0.0.1/Security'
+     )
+
+ const personalDetails  = new mongoose.Schema( {
+      username : String ,
+      email : String ,
+      phone : Number ,
+      info : String
+    }) 
+
+ const personalDetail = new mongoose.model('personalDetail',personalDetails);
+    
+
+
+const userPass = new mongoose.Schema( {
+  username : { type: String, required: true },
+  password: { type: String ,},
+  userInfo  : personalDetails
+}) 
+
+userPass.plugin(passportLocalMongoose);
+    
+
+const userdetail = new mongoose.model('userdetail',userPass);
+
+// use static authenticate method of model in LocalStrategy
+passport.use(new LocalStrategy(userdetail.authenticate()));
+
+// use static serialize and deserialize of model for passport session support
+passport.serializeUser(userdetail.serializeUser());
+passport.deserializeUser(userdetail.deserializeUser());
 
 
 app.get("/",function(req,res){
@@ -53,60 +78,100 @@ app.get("/register",function(req,res){
 })
 
 
+app.get("/logout",function(req,res,next){
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    res.redirect('/');
+  });
+})
+
 app.get("/secrets",function(req,res){
-    res.render('secrets.ejs');
+  if(req.isAuthenticated()){
+
+    userdetail.findById(req.user.id)
+    .then((founduser)=>{
+     res.render("secrets",{userwithInfo:founduser.userInfo})
+     }) 
+   .catch((err)=>{
+    console.log(err)
+    })
+      } else{
+        res.redirect("/login");
+      }
 })
 
 
 app.get("/submit",function(req,res){
-  res.render('submit.ejs');
+  res.render("submit.ejs");
 })
 
 
-app.post('/register',function(req,res){
-    // const userEmail = req.body.username;
-    // const userPass = req.body.password;
 
-   bcrypt.genSalt(saltRounds, function(err, salt) {
-      bcrypt.hash(req.body.password, salt, function(err, hash) {
-        const userDetails =  new  UserPass ({
-          email : req.body.username ,
-          password : hash
-        })
-          userDetails.save()
-          res.redirect('/secrets')
-      });
-  });
+app.post("/submit",function(req,res){
+const userInfo = new personalDetail({
+   username : req.body.name ,
+   email : req.body.email ,
+   phone : req.body.phone ,
+   info : req.body.info 
+ })
+   userInfo.save();
 
+  userdetail.findById(req.user.id)
+     .then((foundUser)=>{
+      if(foundUser){
+        foundUser.userInfo = userInfo ;
+        if( foundUser.save()){
+          res.redirect("/")
+        } else{
+          console.log("sorry any problem ")
+        }
+       }
+     })
+     .catch((err)=>{
+     console.log(err);
+     })
  })
 
-app.post('/login',function(req,res){
-  const userName = req.body.username;
-  const password = req .body.password;
- 
+app.post('/register',function(req,res){
+
+  const Username = req.body.username;
+  const Userpassword = req.body.password;
+
+   userdetail.register(new userdetail({username:Username}), Userpassword)
+   .then((user)=>{
+    passport.authenticate("local")(req,res , function(){
+    res.redirect("/secrets")
+    })
+   })
+   .catch((err)=>{
+   console.log(err);
+   res.redirect("/register")
+   })
+})
   
-  UserPass.findOne({email:userName})
-  .then((foundUser)=>{
-    bcrypt.compare(password, foundUser.password, function(err, result) {
-      if(result==true){
-        res.render("secrets");
-      }else{
-        console.log("UserName and Pass is Wrong ")
-      }
-   });
-    // if(foundUser.password === password){
-    //     res.render("secrets");
-    //     // console.log(foundUser.password);
-    // }else{
-      
-    // }
+
+app.post('/login',function(req,res){
+ 
+  const user = new userdetail ({
+    username: req.body.username,
+    password:req.body.password
   })
-  .catch((err)=>{
-    console.log(err)
+ 
+
+  req.login(user,function(err){
+    if(err){
+      console.log(err)
+    }else{
+      passport.authenticate("local")(req,res,function(){
+        res.redirect("/secrets");
+      })
+    }
   })
+
 })  
 
-// console.log(process.env) 
+
+
 app.listen(port ,()=>{
     console.log(`Server is started on port ${port} ` );
 })
