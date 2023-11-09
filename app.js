@@ -10,8 +10,12 @@ const session = require('express-session');
 const passport =require('passport');
 const passportLocalMongoose =require('passport-local-mongoose');
 const API = process.env.API ;
+const GoogleStrategy = require( 'passport-google-oauth2' ).Strategy;
+const findOrCreate = require('mongoose-findorcreate');
 
-// console.log(API);
+
+
+
 
 
 
@@ -20,6 +24,8 @@ app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended:true})) ;
 app.set('view engine','ejs') ;
 const port = 5500 ;
+
+
 
 app.use(session({
   secret:"our little secret",
@@ -31,8 +37,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
-mongoose.connect('mongodb://127.0.0.1/Security'
-     )
+
+
+mongoose.connect('mongodb://localhost:27017/Security')
+
 
  const personalDetails  = new mongoose.Schema( {
       username : String ,
@@ -46,27 +54,77 @@ mongoose.connect('mongodb://127.0.0.1/Security'
 
 
 const userPass = new mongoose.Schema( {
-  username : { type: String, required: true },
+  username : { type: String },
   password: { type: String ,},
-  userInfo  : personalDetails
+  userInfo  : personalDetails ,
+  googleId : String 
 }) 
 
 userPass.plugin(passportLocalMongoose);
     
+userPass.plugin(findOrCreate);
 
 const userdetail = new mongoose.model('userdetail',userPass);
 
-// use static authenticate method of model in LocalStrategy
+
+
+// // use static authenticate method of model in LocalStrategy
+
 passport.use(new LocalStrategy(userdetail.authenticate()));
 
 // use static serialize and deserialize of model for passport session support
-passport.serializeUser(userdetail.serializeUser());
-passport.deserializeUser(userdetail.deserializeUser());
+// passport.serializeUser(userdetail.serializeUser());
+// passport.deserializeUser(userdetail.deserializeUser());
+
+passport.serializeUser(function(user, cb) {
+  process.nextTick(function() {
+    return cb(null, {
+      id: user.id,
+    });
+  });
+});
+
+passport.deserializeUser(function(user, cb) {
+  process.nextTick(function() {
+    return cb(null, user);
+  });
+});
+
+
+
+
+
+passport.use(new GoogleStrategy({
+  clientID:     process.env.CLIENT_ID ,
+  clientSecret: process.env.CLIENT_SECRET ,
+  callbackURL: "http://localhost:5500/auth/google/secrets",
+  useProfileUrl: "https://www.googleapis.com/oauth2/v3/userinfo" ,
+  passReqToCallback   : true
+},
+function(request, accessToken, refreshToken, profile, done)
+ {
+   console.log(profile)
+  userdetail.findOrCreate({ googleId: profile.id ,
+    username: profile.displayName}, function (err, user) {
+    return done(err, user);
+  });
+}
+));
+
 
 
 app.get("/",function(req,res){
     res.render('home.ejs');
 })
+
+app.get("/auth/google", passport.authenticate('google', { scope: ["profile"] }));
+
+app.get("/auth/google/secrets",
+  passport.authenticate('google', { failureRedirect: "/login" }),
+  function(req, res) {
+    // Successful authentication, redirect to secrets.
+    res.redirect("/secrets");
+  });
 
 
 app.get("/login",function(req,res){
@@ -136,6 +194,8 @@ app.post('/register',function(req,res){
 
   const Username = req.body.username;
   const Userpassword = req.body.password;
+
+  console.log(Username,Userpassword);
 
    userdetail.register(new userdetail({username:Username}), Userpassword)
    .then((user)=>{
