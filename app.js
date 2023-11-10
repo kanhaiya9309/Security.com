@@ -15,10 +15,6 @@ const findOrCreate = require('mongoose-findorcreate');
 
 
 
-
-
-
-
 const app = express();
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended:true})) ;
@@ -49,6 +45,7 @@ mongoose.connect('mongodb://localhost:27017/Security')
       info : String
     }) 
 
+
  const personalDetail = new mongoose.model('personalDetail',personalDetails);
     
 
@@ -59,6 +56,7 @@ const userPass = new mongoose.Schema( {
   userInfo  : personalDetails ,
   googleId : String 
 }) 
+
 
 userPass.plugin(passportLocalMongoose);
     
@@ -91,13 +89,10 @@ passport.deserializeUser(function(user, cb) {
 });
 
 
-
-
-
 passport.use(new GoogleStrategy({
   clientID:     process.env.CLIENT_ID ,
   clientSecret: process.env.CLIENT_SECRET ,
-  callbackURL: "http://localhost:5500/auth/google/secrets",
+  callbackURL: "http://localhost:5500/auth/google/netflix",
   useProfileUrl: "https://www.googleapis.com/oauth2/v3/userinfo" ,
   passReqToCallback   : true
 },
@@ -114,16 +109,17 @@ function(request, accessToken, refreshToken, profile, done)
 
 
 app.get("/",function(req,res){
-    res.render('home.ejs');
+    res.render("home.ejs")
 })
 
 app.get("/auth/google", passport.authenticate('google', { scope: ["profile"] }));
 
-app.get("/auth/google/secrets",
+
+app.get("/auth/google/netflix",
   passport.authenticate('google', { failureRedirect: "/login" }),
   function(req, res) {
     // Successful authentication, redirect to secrets.
-    res.redirect("/secrets");
+    res.redirect("/netflix");
   });
 
 
@@ -136,23 +132,30 @@ app.get("/register",function(req,res){
 })
 
 
+
 app.get("/logout",function(req,res,next){
   req.logout(function(err) {
     if (err) { return next(err); }
     res.redirect('/');
   });
 })
-
 app.get("/secrets",function(req,res){
   if(req.isAuthenticated()){
-
-    userdetail.findById(req.user.id)
+     userdetail.findById(req.user.id)
     .then((founduser)=>{
-     res.render("secrets",{userwithInfo:founduser.userInfo})
-     }) 
-   .catch((err)=>{
-    console.log(err)
-    })
+      res.render("secrets",{userwithInfo:founduser.userInfo})
+      }) 
+    .catch((err)=>{
+     console.log(err)
+     })
+       } else{
+         res.redirect("/login");
+      }
+ })
+
+app.get("/netflix",function(req,res){
+  if(req.isAuthenticated()){
+   res.sendFile(__dirname + "/public/home.html");
       } else{
         res.redirect("/login");
       }
@@ -200,7 +203,7 @@ app.post('/register',function(req,res){
    userdetail.register(new userdetail({username:Username}), Userpassword)
    .then((user)=>{
     passport.authenticate("local")(req,res , function(){
-    res.redirect("/secrets")
+    res.redirect("/netflix")
     })
    })
    .catch((err)=>{
@@ -223,7 +226,11 @@ app.post('/login',function(req,res){
       console.log(err)
     }else{
       passport.authenticate("local")(req,res,function(){
-        res.redirect("/secrets");
+        if(passport.authenticate){
+          res.redirect("/netflix");
+        }else{
+          alert("Username and Password not match")
+        }
       })
     }
   })

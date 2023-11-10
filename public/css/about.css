@@ -1,0 +1,151 @@
+.movie-info{
+    width: 100%;
+    height: calc(100vh - 60px);
+    margin-top: 60px;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+.movie-details{
+    width: 50%;
+    height: 100%;
+    background: rgb(24,24,24);
+    background: linear-gradient(90deg, rgba(24, 24, 24, 1), rgba(24, 24, 24, 0) 100%);
+    padding: 5vh;
+    display: flex;
+    flex-direction: column;
+    justify-content:flex-end;
+    color: #fff;
+}
+.movie-name{
+    font-size: 30px;
+    font-weight: 500;
+}
+.genres{
+    opacity: 0.6;
+    margin: 30px 0 ;
+}
+.dec{
+    width: 100%;
+    line-height: 20px;
+    margin-bottom: 60px;
+}
+.Starring span{
+    opacity: 0.6;
+}
+.trailer-container,
+.recommendation {
+    color: #fff;
+    padding: 5vw 5vw 0;
+
+}
+.heading{
+    font-size: 30px;
+    font-weight: 300;
+    margin-bottom: 20px;
+}
+iframe{
+    width: 400px;
+    height: 200px;
+}
+.recommendation-container{
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.movie p{
+    width: 100%;
+    height: 30px;
+    line-height: 30px;
+    position: absolute;
+    text-align: center;
+    bottom: 30px;
+    opacity: 0;
+}
+.movie:hover p{
+    opacity: 1;
+}
+@media (max-width: 768px) {
+    .navbar {
+        height: 80px;
+    }
+
+    .logo {
+        height: 50%;
+    }
+
+    .join-message-box {
+        margin-left: 10px;
+    }
+
+    .join-message {
+        display: none;
+    }
+
+    .btn {
+        height: 40px;
+        padding: 0 15px;
+    }
+
+    .join-btn {
+        background-color: #dd0e15;
+        border: #dd0e15;
+    }
+
+    .sigh-btn {
+        margin-left: 10px;
+    }
+
+    .movie-details {
+        width: 100%; /* Adjust movie-details width for smaller screens */
+        padding: 10px; /* Adjust padding for smaller screens */
+    }
+
+    .movie-name {
+        font-size: 20px; /* Adjust font size for smaller screens */
+    }
+
+    .dec {
+        margin-bottom: 30px; /* Adjust margin for smaller screens */
+    }
+    .recommendation-container {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .movie {
+        width: 100%;
+        margin-bottom: 20px;
+    }
+    .movie-info {
+        background-size: contain; /* Adjust background size for smaller screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar {
+        height: 60px;
+    }
+
+    .movie-details {
+        padding: 5px; /* Further adjust padding for mobile screens */
+    }
+
+    .heading {
+        font-size: 24px; /* Adjust heading font size for mobile screens */
+    }
+
+    iframe {
+        height: 200px;
+        width: 350px; /* Adjust iframe height for mobile screens */
+    }
+    .movie p {
+        height: 20px; /* Adjust text height for better mobile display */
+    }
+    .movie-info{
+        height: 500px;
+        width: 400px;
+        background-size: contain;
+    }
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix : HomePage</title>
+    <link href="./css/style.css" rel="stylesheet" >
+</head>
+<body>
+     <!--Navbar-->
+  <navbar class="navbar">
+     <img src="./img/logo.png"  class="logo"  alt="netflix-logo" >
+       <div class="join-message-box">
+        <p class="join-message">unlimited movies and shows</p>
+        <button type="button"  class="btn join-btn"  onclick="location.href = '/logout'" >log out </button>
+      </div>
+  </navbar>
+
+  <!--Main Header-->
+  <header class="main" id="main">
+      <h1 class="heading">Movie</h1>
+      <p class="info">Movies move us like nothing else can, whether they're scary, 
+               funny, dramatic, romantic .So many titles so much to experience.
+            </p>
+       <!--Movies list-->
+       <!-- <div class="movie-list">
+         <button type="button" class="pre-btn"><img src="./img/pre.png" alt="pre-btn" ></button>
+             <h1 class="movie-category">Popular Movies</h1>
+        <div class="movie-container">
+               <div class="movie">
+                   <img src="./img/poster.jpg" alt="movie-poster">
+                   <p class="movie-title">Movie Name</p>
+               </div>
+       </div>
+       <button type="button" class="next-btn"><img src="./img/nxt.png"  alt="next-btn"></button>
+    </div> -->
+  </header>
+
+  <script src="./js/api.js"></script>
+  <script src="./js/home.js"></script>
+  <script src="./js/scroll.js"></script>
+</body>
+</html>

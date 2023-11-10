@@ -1,16 +1,23 @@
 <%- include('partials/header') %>
 
+    <navbar class="navbar">
+      <img src="./img/logo.png"  class="logo"  alt="netflix-logo" >
+        <div class="join-message-box">
+         <p class="join-message">unlimited movies and shows</p>
+         <button type="button"  class="btn join-btn"  onclick="location.href = '/login'"> join Now </button>
+         <button type="button"  class="btn sigh-btn"  onclick="location.href = '/register'"> Sign In </button>
+       </div>
+    </navbar>
 
-<div class="jumbotron centered">
-  <div class="container">
-    <i class="fas fa-key fa-6x"></i>
-    <h1 class="display-3">Secrets</h1>
-    <p class="lead">Don't keep your secrets, share them anonymously!</p>
-    <hr>
-    <a class="btn btn-light btn-lg" href="/register" role="button">Register</a>
-    <a class="btn btn-dark btn-lg" href="/login" role="button">Login</a>
+    <div class="jumbotron centered">
+      <div class="container">
+        <i class="fas fa-key fa-6x"></i>
+        <h1 class="display-3 ">Netflix</h1>
+        <p class="lead ">Enjoy big movies, hit series and more from ₹ 149.</p>
+        <hr>
+        <a class="btn btn-dark btn-lg join-btn" href="/login" role="button">Join Now</a>
+        <a class="btn btn-light btn-lg sigh-btn" href="/register" role="button">Sign In</a>
+      </div>
+    </div>
 
-  </div>
-</div>
-
-<%- include('partials/footer') %>
+  </body>
